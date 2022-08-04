@@ -10,6 +10,7 @@ import (
 	"os"
 	"sort"
 	"time"
+	"encoding/json"
 
 	supervisor_helper "github.com/gitpod-io/gitpod/gitpod-cli/pkg/supervisor-helper"
 	"github.com/gitpod-io/gitpod/gitpod-cli/pkg/utils"
@@ -19,6 +20,8 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 )
+
+var jsonOutput = false
 
 var listPortsCmd = &cobra.Command{
 	Use:   "list",
@@ -42,6 +45,12 @@ var listPortsCmd = &cobra.Command{
 		sort.Slice(ports, func(i, j int) bool {
 			return int(ports[i].LocalPort) < int(ports[j].LocalPort)
 		})
+
+		if jsonOutput {
+			portsJson, _ := json.Marshal(ports)
+			fmt.Println(string(portsJson))
+			return
+		}
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Port", "Status", "URL", "Name & Description"})
@@ -94,5 +103,6 @@ var listPortsCmd = &cobra.Command{
 
 func init() {
 	listPortsCmd.Flags().BoolVarP(&noColor, "no-color", "", false, "Disable output colorization")
+	listPortsCmd.Flags().BoolVarP(&jsonOutput, "json", "", false, "Return output in json format")
 	portsCmd.AddCommand(listPortsCmd)
 }
