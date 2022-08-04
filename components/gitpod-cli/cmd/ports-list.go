@@ -21,6 +21,14 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+type portObj struct {
+	port int
+	status string
+	url string
+	name string
+	description []string
+}
+
 var jsonOutput = false
 
 var listPortsCmd = &cobra.Command{
@@ -47,7 +55,17 @@ var listPortsCmd = &cobra.Command{
 		})
 
 		if jsonOutput {
-			portsJson, _ := json.Marshal(ports)
+			var structuredPorts []portObj
+			for _, port := range ports {
+				append(structuredPorts, &portObj{
+					port: int(port.LocalPort),
+					status: string(port.AutoExposure),
+					url: port.Exposed.url,
+					name: port.Name,
+					Description: port.Description,
+				})
+			}
+			portsJson, _ := json.Marshal(structuredPorts)
 			fmt.Println(string(portsJson))
 			return
 		}
